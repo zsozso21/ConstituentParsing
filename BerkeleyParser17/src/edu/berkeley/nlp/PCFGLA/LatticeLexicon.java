@@ -23,6 +23,7 @@ public class LatticeLexicon extends SophisticatedLexicon {
 	private static String LEXICONFILE;
 	protected Map<String, Map<String, Double>> wordsPerMainPos = new HashMap<String, Map<String, Double>>();
 	protected Map<String, Map<String, Double>> mainPosPerWords = new HashMap<String, Map<String, Double>>();
+	private static boolean IS_TEST = false;
 
 	public void init() {
 		try {
@@ -46,6 +47,7 @@ public class LatticeLexicon extends SophisticatedLexicon {
 					new FileInputStream(LEXICONFILE), "UTF-8"));
 
 			String line;
+			Numberer numberer = Numberer.getGlobalNumberer("tags");
 			while ((line = reader.readLine()) != null) {
 				line = line.replaceFirst("^[\\s]*", "");
 				String l[] = line.split("[\\t\\s]");
@@ -53,18 +55,9 @@ public class LatticeLexicon extends SophisticatedLexicon {
 				String word = l[1];
 				String pos = l[2];
 
-				// word = word.replace("(", "-LRB-");
-				// word = word.replace(")", "-RRB-");
-				// pos = pos.replace("K", "PUNC");
-				// pos = pos.replace("-", "PUNC");
-				// pos = pos.replace("!", "PUNC");
-				// pos = pos.replace(",", "PUNC");
-				// pos = pos.replace(".", "PUNC");
-				// pos = pos.replace(":", "PUNC");
-				// pos = pos.replace(";", "PUNC");
-				// pos = pos.replace("?", "PUNC");
-				//
-				// pos = pos.replace("X", "N");
+				if (IS_TEST && !numberer.objects().contains(pos))
+					continue;
+
 				if (!wordsPerMainPos.containsKey(pos))
 					wordsPerMainPos.put(pos, new HashMap<String, Double>());
 				double preNums = wordsPerMainPos.get(pos).containsKey(word) ? wordsPerMainPos
@@ -163,19 +156,11 @@ public class LatticeLexicon extends SophisticatedLexicon {
 		double[] resultArray = super.score(word, tag, loc, noSmoothing,
 				isSignature);
 
-		// String pos = getMainPos(tagNumberer.object(tag).toString());
 		String pos = tagNumberer.object(tag).toString();
-		if (isSignature || wordCounter.getCount(word) > THRESHOLD) {
+		if (isSignature || wordCounter.getCount(word) > THRESHOLD
+				|| !mainPosPerWords.containsKey(word)) {
 			return resultArray;
 		}
-
-		// Set<String> possibleTags = morph_analysis.get(word);
-		// if (wordCounter.getCount(word) > 4 || possibleTags == null
-		// || !possibleTags.contains(pos))
-		// return resultArray;
-
-		// double pb_T_W = 1.0 / morph_analysis.get(word).size()
-		// / resultArray.length;
 
 		double pb_T_W = 0.0;
 		if (mainPosPerWords.containsKey(word)
@@ -183,7 +168,8 @@ public class LatticeLexicon extends SophisticatedLexicon {
 			pb_T_W = mainPosPerWords.get(word).get(pos);
 		}
 		double c_W = wordCounter.getCount(word);
-		double p_W = (c_W < 0.1 ? 1f : c_W) / totalTokens;
+		c_W = c_W < 0.1 ? 1f : c_W;
+		double p_W = c_W / totalTokens;
 		for (int substate = 0; substate < resultArray.length; ++substate) {
 			double c_Tseen = tagCounter[tag][substate];
 			double p_T = (c_Tseen / totalTokens);
@@ -193,13 +179,13 @@ public class LatticeLexicon extends SophisticatedLexicon {
 				resultArray[substate] = Math.exp(resultArray[substate]);
 			}
 
-			if (c_W == 0) {
-				resultArray[substate] = pb_W_T;
-			} else {
-				resultArray[substate] = (resultArray[substate] * c_W + WEIGHT
-						* pb_W_T)
-						/ (c_W + WEIGHT);
-			}
+			// if (c_W == 0) {
+			// resultArray[substate] = pb_W_T;
+			// } else {
+			resultArray[substate] = (resultArray[substate] * c_W + WEIGHT
+					* pb_W_T)
+					/ (c_W + WEIGHT);
+			// }
 		}
 
 		smoother.smooth(tag, resultArray);
@@ -251,6 +237,7 @@ public class LatticeLexicon extends SophisticatedLexicon {
 		if (args[0].equalsIgnoreCase("train")) {
 			GrammarTrainer.main(Arrays.copyOfRange(args, 4, args.length));
 		} else if (args[0].equalsIgnoreCase("test")) {
+			IS_TEST = true;
 			BerkeleyParser.main(Arrays.copyOfRange(args, 4, args.length));
 		} else {
 			System.out
