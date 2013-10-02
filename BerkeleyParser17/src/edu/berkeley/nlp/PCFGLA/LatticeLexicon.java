@@ -7,9 +7,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import edu.berkeley.nlp.PCFGLA.smoothing.Smoother;
 import edu.berkeley.nlp.util.Numberer;
@@ -21,13 +21,16 @@ public class LatticeLexicon extends SophisticatedLexicon {
 	private static double WEIGHT = Double.NaN;
 	private static int THRESHOLD = Integer.MAX_VALUE;
 	private static String LEXICONFILE;
-	protected Map<String, Map<String, Double>> wordsPerMainPos = new HashMap<String, Map<String, Double>>();
-	protected Map<String, Map<String, Double>> mainPosPerWords = new HashMap<String, Map<String, Double>>();
+	protected static Map<String, Map<String, Double>> wordsPerMainPos = new TreeMap<String, Map<String, Double>>();
+	protected static Map<String, Map<String, Double>> mainPosPerWords = new TreeMap<String, Map<String, Double>>();
 	private static boolean IS_TEST = false;
+	private static boolean FIRST_INIT;
 
 	public void init() {
 		try {
-
+			if (!FIRST_INIT)
+				return;
+			FIRST_INIT = false;
 			// morph_analysis = new HashMap<String, Set<String>>();
 			// BufferedReader reader = new BufferedReader(
 			// new InputStreamReader(
@@ -48,6 +51,7 @@ public class LatticeLexicon extends SophisticatedLexicon {
 
 			String line;
 			Numberer numberer = Numberer.getGlobalNumberer("tags");
+
 			while ((line = reader.readLine()) != null) {
 				line = line.replaceFirst("^[\\s]*", "");
 				String l[] = line.split("[\\t\\s]");
@@ -58,14 +62,17 @@ public class LatticeLexicon extends SophisticatedLexicon {
 				if (IS_TEST && !numberer.objects().contains(pos))
 					continue;
 
-				if (!wordsPerMainPos.containsKey(pos))
-					wordsPerMainPos.put(pos, new HashMap<String, Double>());
-				double preNums = wordsPerMainPos.get(pos).containsKey(word) ? wordsPerMainPos
-						.get(pos).get(word) : 0;
-				wordsPerMainPos.get(pos).put(word, preNums + num);
+				double preNums;
+
+				// if (!wordsPerMainPos.containsKey(pos))
+				// wordsPerMainPos.put(pos, new TreeMap<String, Double>());
+				// preNums = wordsPerMainPos.get(pos).containsKey(word) ?
+				// wordsPerMainPos
+				// .get(pos).get(word) : 0;
+				// wordsPerMainPos.get(pos).put(word, preNums + num);
 
 				if (!mainPosPerWords.containsKey(word))
-					mainPosPerWords.put(word, new HashMap<String, Double>());
+					mainPosPerWords.put(word, new TreeMap<String, Double>());
 				preNums = mainPosPerWords.get(word).containsKey(pos) ? mainPosPerWords
 						.get(word).get(pos) : 0;
 				mainPosPerWords.get(word).put(pos, preNums + num);
@@ -212,6 +219,7 @@ public class LatticeLexicon extends SophisticatedLexicon {
 	}
 
 	public static void main(String[] args) throws Exception {
+		FIRST_INIT = true;
 		if (args.length < 4) {
 			System.out
 					.println("Usage: java edu.berkeley.nlp.PCFGLA.LatticeLexicon train|test weight threshold lexiconFile originalParamters");
