@@ -166,7 +166,7 @@ public class LatticeLexicon extends SophisticatedLexicon {
 				isSignature);
 
 		String pos = tagNumberer.object(tag).toString();
-		if (isSignature || wordCounter.getCount(word) > THRESHOLD
+		if (WEIGHT == 0 || isSignature || wordCounter.getCount(word) > THRESHOLD
 				|| !mainPosPerWords.containsKey(word)) {
 			return resultArray;
 		}
