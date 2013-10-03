@@ -171,7 +171,7 @@ public class LatticeLexicon extends SophisticatedLexicon {
 			return resultArray;
 		}
 
-		double pb_T_W = 0.0;
+		double pb_T_W = 0;//0.0001;
 		if (mainPosPerWords.containsKey(word)
 				&& mainPosPerWords.get(word).containsKey(pos)) {
 			pb_T_W = mainPosPerWords.get(word).get(pos);
@@ -181,6 +181,8 @@ public class LatticeLexicon extends SophisticatedLexicon {
 		double p_W = c_W / totalTokens;
 		for (int substate = 0; substate < resultArray.length; ++substate) {
 			double c_Tseen = tagCounter[tag][substate];
+			if (c_Tseen == 0)
+				continue;
 			double p_T = (c_Tseen / totalTokens);
 			double pb_W_T = pb_T_W * p_W / p_T;
 
@@ -196,10 +198,12 @@ public class LatticeLexicon extends SophisticatedLexicon {
 					/ (c_W + WEIGHT);
 			// }
 		}
-
 		smoother.smooth(tag, resultArray);
 		if (logarithmMode) {
 			for (int i = 0; i < resultArray.length; i++) {
+				if (resultArray[i] == 0) {
+					System.out.println(word);
+				}
 				resultArray[i] = Math.log(resultArray[i]);
 				if (Double.isNaN(resultArray[i]))
 					resultArray[i] = Double.NEGATIVE_INFINITY;
