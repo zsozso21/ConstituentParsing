@@ -1,1 +1,12 @@
 /constituent
+/Feat2MergedFeat.class
+/Feat2MergedFeatKnowedTags.class
+/LexiconPosMerger.class
+/PosCounter.class
+/PosFormatConverter.class
+/Ptb2MarmotTrain.class
+/Ptb2Raw.class
+/ResultMerger.class
+/berkeley
+/features
+/tools
