@@ -41,6 +41,8 @@ import edu.berkeley.nlp.syntax.Tree;
 import edu.berkeley.nlp.syntax.TreeJPanel;
 import edu.berkeley.nlp.util.Numberer;
 
+import edu.berkeley.nlp.PCFGLA.LatticeLexicon;
+
 public class BerkeleyParserWrapper {
 
 	public static double calcConfidence(CoarseToFineMaxRuleParser parser, Tree<String> tree) {
@@ -136,7 +138,8 @@ public class BerkeleyParserWrapper {
 			grammar = new Grammar(numSubStatesArray, findClosedUnaryPaths, new NoSmoothing(), null, filter, tagNumberer);
 			lexicon = (opts.simpleLexicon) ? 
 					new SimpleLexicon(numSubStatesArray,-1,smoothParams, new NoSmoothing(),filter, trainStateSetTrees) : 
-						new SophisticatedLexicon(opts.unknownLevel,numSubStatesArray,SophisticatedLexicon.DEFAULT_SMOOTHING_CUTOFF,smoothParams, new NoSmoothing(),filter,wordNumberer);
+//						new SophisticatedLexicon(opts.unknownLevel,numSubStatesArray,SophisticatedLexicon.DEFAULT_SMOOTHING_CUTOFF,smoothParams, new NoSmoothing(),filter,wordNumberer);
+						new LatticeLexicon(opts.unknownLevel,numSubStatesArray,SophisticatedLexicon.DEFAULT_SMOOTHING_CUTOFF,smoothParams, new NoSmoothing(),filter,wordNumberer);
 					int n = 0;
 					boolean secondHalf = false;
 					for (Tree<StateSet> stateSetTree : trainStateSetTrees) {
@@ -202,7 +205,8 @@ public class BerkeleyParserWrapper {
 				// retrain lexicon to finish the lexicon merge (updates the unknown words model)...
 				lexicon = (opts.simpleLexicon) ? 
 						new SimpleLexicon(newNumSubStatesArray,-1,smoothParams, maxLexicon.getSmoother() ,filter, trainStateSetTrees) :
-							new SophisticatedLexicon(opts.unknownLevel,newNumSubStatesArray,SophisticatedLexicon.DEFAULT_SMOOTHING_CUTOFF, maxLexicon.getSmoothingParams(), maxLexicon.getSmoother(), maxLexicon.getPruningThreshold(),wordNumberer);
+//							new SophisticatedLexicon(opts.unknownLevel,newNumSubStatesArray,SophisticatedLexicon.DEFAULT_SMOOTHING_CUTOFF, maxLexicon.getSmoothingParams(), maxLexicon.getSmoother(), maxLexicon.getPruningThreshold(),wordNumberer);
+							new LatticeLexicon(opts.unknownLevel,newNumSubStatesArray,SophisticatedLexicon.DEFAULT_SMOOTHING_CUTOFF, maxLexicon.getSmoothingParams(), maxLexicon.getSmoother(), maxLexicon.getPruningThreshold(),wordNumberer);
 						boolean updateOnlyLexicon = true;
 						double trainingLikelihood = GrammarTrainer.doOneEStep(grammar, maxLexicon, null, lexicon, trainStateSetTrees, updateOnlyLexicon);
 						//  		System.out.println("The training LL is "+trainingLikelihood);
@@ -240,7 +244,9 @@ public class BerkeleyParserWrapper {
 				grammar = new Grammar(grammar.numSubStates, grammar.findClosedPaths, grammar.smoother, grammar, grammar.threshold, tagNumberer);
 				lexicon = (opts.simpleLexicon) ? 
 						new SimpleLexicon(grammar.numSubStates,-1,smoothParams, lexicon.getSmoother() ,filter, trainStateSetTrees) :
-							new SophisticatedLexicon(opts.unknownLevel,grammar.numSubStates,	SophisticatedLexicon.DEFAULT_SMOOTHING_CUTOFF, lexicon.getSmoothingParams(), lexicon.getSmoother(), lexicon.getPruningThreshold(),wordNumberer);
+							//new SophisticatedLexicon(opts.unknownLevel,grammar.numSubStates,	SophisticatedLexicon.DEFAULT_SMOOTHING_CUTOFF, lexicon.getSmoothingParams(), lexicon.getSmoother(), lexicon.getPruningThreshold(),wordNumberer);
+							new LatticeLexicon(opts.unknownLevel,grammar.numSubStates,	SophisticatedLexicon.DEFAULT_SMOOTHING_CUTOFF, lexicon.getSmoothingParams(), lexicon.getSmoother(), lexicon.getPruningThreshold(),wordNumberer);
+
 						boolean updateOnlyLexicon = false;
 						double trainingLikelihood = GrammarTrainer.doOneEStep(previousGrammar,previousLexicon,grammar,lexicon,trainStateSetTrees,updateOnlyLexicon);  // The training LL of previousGrammar/previousLexicon
 						System.out.println("done: "+trainingLikelihood);

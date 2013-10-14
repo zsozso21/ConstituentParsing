@@ -2,6 +2,9 @@ package edu.berkeley.nlp.PCFGLA;
 
 //import ims.hypergraph.EvalBF;
 
+import ims.productParser.ProductParserTrainer;
+import ims.productParser.ProductParser;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -216,7 +219,7 @@ public class LatticeLexicon extends SophisticatedLexicon {
 
 	public void setTagNumberer(Numberer numb) {
 		tagNumberer = numb;
-	}
+	}	
 
 	public static void main(String[] args) throws Exception {
 		FIRST_INIT = true;
@@ -247,6 +250,11 @@ public class LatticeLexicon extends SophisticatedLexicon {
 		} else if (args[0].equalsIgnoreCase("test")) {
 			IS_TEST = true;
 			BerkeleyParser.main(Arrays.copyOfRange(args, 4, args.length));
+		} else if (args[0].equalsIgnoreCase("pptrain")) {
+			ProductParserTrainer.main(Arrays.copyOfRange(args, 4, args.length));
+		} else if (args[0].equalsIgnoreCase("pptest")) {
+			IS_TEST = true;
+			ProductParser.main(Arrays.copyOfRange(args, 4, args.length));
 		} else {
 			System.out
 					.println("The first parameter must be \"train\" or \"test\".");
